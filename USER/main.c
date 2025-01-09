@@ -103,7 +103,7 @@ int main(void)
 		OLED_Refresh();
 		
 		PID_Calculate();
-		CCR1_Val=500 - PID.OUT;
+		CCR1_Val = PID.OUT;  // PID.OUT值越大，制冷越强
 
 		GENERAL_TIM_Init();
 		printf ( "%.2f,%.2f,%.2f,%.2f,%.2f,%.d\n",PID.setTemp,DS18B20_GetTemp_SkipRom (),PID.t1,PID.t2,PID.t3,CCR1_Val);

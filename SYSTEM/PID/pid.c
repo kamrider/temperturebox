@@ -8,47 +8,39 @@ PID_struct PID;
 
 void PID_Init()
 {
-	PID.setTemp = 18;
-	PID.Kp = 1500;
-//	PID.tSample = 400;
-	PID.Ti = 2;
-	PID.Td = 0;
+	PID.setTemp = 17.0;
+	PID.Kp = 30.0;
+	PID.Ti = 0.001;
+	PID.Td = 0.1;
+	
+	PID.eLast = 0.0;
+	PID.OUT = 0.0;
+	PID.t1 = 0.0;
+	PID.t2 = 0.0;
+	PID.t3 = 0.0;
 }
 
 void PID_Calculate()
 {
-
-		double Dk1;
-		double Dk2;
-		
-//		if(PID.tFlag < PID.tSample / 10 ) return;
-		
-		PID.tempFromSensor = DS18B20_GetTemp_SkipRom ();
-		PID.ePresent = PID.setTemp - PID.tempFromSensor;
+	float error;
 	
-		Dk1 = PID.ePresent - PID.eLast;
-		
-		Dk2 = PID.ePresent - 2 * PID.eLast + PID.eBeforeLast;
-		
-		PID.t1 = PID.Kp * Dk1;
-		
-		PID.t2 = PID.Ti * PID.ePresent;
+	PID.tempFromSensor = DS18B20_GetTemp_SkipRom();
 	
-		
-		PID.t3 = PID.Td * Dk2;
-		
-		PID.Delta_OUT = PID.t1 + PID.t2 + PID.t3;
-		
-		
-		PID.OUT += PID.Delta_OUT;
-
-		if(PID.OUT > 500)
-			PID.OUT = 500;
-		if(PID.OUT < 0)
-			PID.OUT = 0;
-		
-		PID.eBeforeLast = PID.eLast;
-		PID.eLast = PID.ePresent;
+	error = PID.tempFromSensor - PID.setTemp;
+	
+	PID.t1 = PID.Kp * error;
+	PID.t2 += PID.Kp * (PID.Ti) * error;
+	PID.t3 = PID.Kp * PID.Td * (error - PID.eLast);
+	
+	PID.OUT = PID.t1 + PID.t2 + PID.t3;
+	
+	if(PID.t2 > 400) PID.t2 = 400;
+	if(PID.t2 < -400) PID.t2 = -400;
+	
+	if(PID.OUT > 500) PID.OUT = 500;
+	if(PID.OUT < 0) PID.OUT = 0;
+	
+	PID.eLast = error;
 }
 		
 		
