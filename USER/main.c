@@ -63,39 +63,46 @@ int main(void)
 	PID_Init();
 	Isr_Init();
 	OLED2_Init();
-	OLED2_ShowString(1,1,"OLED2 Test");           // 第1行显示测试文字
-	OLED2_ShowString(2,1,"Temp:");                // 第2行显示"Temp:"
-	OLED2_ShowNum(2,6,25,2);                      // 显示数字25
-	OLED2_ShowString(2,8,"C");                    // 显示摄氏度符号
+	OLED2_ShowString(1,1,"OLED2 Test");           
+	OLED2_ShowString(2,1,"Temp:");                
 	
-	
-		while(1)
-		{	
-			
-			if(Key_Scan(GPIOA,GPIO_Pin_0))
-				PID.setTemp += 0.5;
-			
-			if(Key_Scan(GPIOC,GPIO_Pin_13))
-				PID.setTemp -= 0.5;
-			
-			temperature = DS18B20_GetTemp_SkipRom ();
-			OLED_ShowString(0,0,"Temperatrue:",16);
-			OLED_ShowFloatNumber(0,16,temperature,16);
-			OLED_ShowString(44,16,"degrees",16);				
-//			OLED_Refresh();
-			OLED_ShowString(0,32,"Target temp:",16);
-			OLED_ShowFloatNumber(0,48,PID.setTemp,16);
-			OLED_ShowString(33,48,"degrees",16);	
-			OLED_Refresh();
-		 
-		  PID_Calculate();
-		  CCR1_Val=500 - PID.OUT;
+	while(1)
+	{	
+//		if(Key_Scan(GPIOA,GPIO_Pin_0))
+//			PID.setTemp += 0.5;
+//		
+//		if(Key_Scan(GPIOC,GPIO_Pin_13))
+//			PID.setTemp -= 0.5;
+		
+		temperature = DS18B20_GetTemp_SkipRom();
+		// 在OLED2上显示实时温度和目标温度
+		OLED2_ShowString(1,1,"Temp:");                 // 显示当前温度标签
+		OLED2_ShowNum(1,6,(int)temperature,2);         // 显示整数部分
+		OLED2_ShowString(1,8,".");                     // 显示小数点
+		OLED2_ShowNum(1,9,(int)((temperature-(int)temperature)*10),1); // 显示小数部分
+		OLED2_ShowString(1,10,"C");                    // 显示摄氏度符号
+		
+		OLED2_ShowString(2,1,"Target:");               // 显示目标温度标签
+		OLED2_ShowNum(2,8,(int)PID.setTemp,2);        // 显示整数部分
+		OLED2_ShowString(2,10,".");                    // 显示小数点
+		OLED2_ShowNum(2,11,(int)((PID.setTemp-(int)PID.setTemp)*10),1); // 显示小数部分
+		OLED2_ShowString(2,12,"C");                    // 显示摄氏度符号
+		
+		// 原有的OLED显示代码保持不变
+		OLED_ShowString(0,0,"Temperatrue:",16);
+		OLED_ShowFloatNumber(0,16,temperature,16);
+		OLED_ShowString(44,16,"degrees",16);				
+		OLED_ShowString(0,32,"Target temp:",16);
+		OLED_ShowFloatNumber(0,48,PID.setTemp,16);
+		OLED_ShowString(33,48,"degrees",16);	
+		OLED_Refresh();
+		
+		PID_Calculate();
+		CCR1_Val=500 - PID.OUT;
 
-	    GENERAL_TIM_Init();
-			printf ( "%.2f,%.2f,%.2f,%.2f,%.2f,%.d\n",PID.setTemp,DS18B20_GetTemp_SkipRom (),PID.t1,PID.t2,PID.t3,CCR1_Val);
-			delay_ms(50);
-	
-    }
-		 
+		GENERAL_TIM_Init();
+		printf ( "%.2f,%.2f,%.2f,%.2f,%.2f,%.d\n",PID.setTemp,DS18B20_GetTemp_SkipRom (),PID.t1,PID.t2,PID.t3,CCR1_Val);
+		delay_ms(50);
+	}
 }
 
