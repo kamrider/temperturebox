@@ -22,6 +22,7 @@
 #include "timer.h"
 #include "bsp_usart.h"
 #include "OLED2.h"
+#include "bsp_air780.h"
 
 extern uint16_t CCR1_Val;
 uint16_t Kms10;
@@ -57,6 +58,7 @@ int main(void)
 	OLED_Init();
 	Key_GPIO_Config();
 	USART_Config();
+	USART2_Init(115200);
 	Timer4_init();
 	TIM4_IRQHandler();
 	DS18B20_Init();
@@ -65,6 +67,9 @@ int main(void)
 	OLED2_Init();
 	OLED2_ShowString(1,1,"OLED2 Test");           
 	OLED2_ShowString(2,1,"Temp:");                
+	
+//	AIR780_Init();
+//	delay_ms(2000);  // 给模块更多启动时间
 	
 	while(1)
 	{	
@@ -102,6 +107,13 @@ int main(void)
 
 		GENERAL_TIM_Init();
 		printf ( "%.2f,%.2f,%.2f,%.2f,%.2f,%.d\n",PID.setTemp,DS18B20_GetTemp_SkipRom (),PID.t1,PID.t2,PID.t3,CCR1_Val);
+		
+//		if(AIR780_MQTT_Publish(temperature) != 1)
+//		{
+//			printf("MQTT发送失败\r\n");
+//			AIR780_Init();
+//		}
+		
 		delay_ms(50);
 	}
 }

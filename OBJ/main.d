@@ -42,4 +42,6 @@
 ..\obj\main.o: ..\SYSTEM\timer\timer.h
 ..\obj\main.o: ..\SYSTEM\usart\bsp_usart.h
 ..\obj\main.o: F:\Keil\ARM\ARMCC\Bin\..\include\stdio.h
+..\obj\main.o: F:\Keil\ARM\ARMCC\Bin\..\include\string.h
 ..\obj\main.o: ..\HARDWARE\OLED2\OLED2.h
+..\obj\main.o: ..\HARDWARE\air780\bsp_air780.h

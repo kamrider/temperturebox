@@ -30,3 +30,4 @@
 ..\obj\bsp_usart.o: ..\STM32F10x_FWLib\inc\stm32f10x_wwdg.h
 ..\obj\bsp_usart.o: ..\STM32F10x_FWLib\inc\misc.h
 ..\obj\bsp_usart.o: F:\Keil\ARM\ARMCC\Bin\..\include\stdio.h
+..\obj\bsp_usart.o: F:\Keil\ARM\ARMCC\Bin\..\include\string.h

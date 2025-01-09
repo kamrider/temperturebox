@@ -8,7 +8,7 @@ PID_struct PID;
 
 void PID_Init()
 {
-	PID.setTemp = 25;
+	PID.setTemp = 18;
 	PID.Kp = 1500;
 //	PID.tSample = 400;
 	PID.Ti = 2;
