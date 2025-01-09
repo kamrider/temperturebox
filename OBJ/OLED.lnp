@@ -8,6 +8,7 @@
 "..\obj\bsp_key.o"
 "..\obj\oled2.o"
 "..\obj\bsp_air780.o"
+"..\obj\bsp_menu.o"
 "..\obj\bsp_generaltim.o"
 "..\obj\pid.o"
 "..\obj\timer.o"

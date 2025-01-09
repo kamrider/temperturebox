@@ -45,3 +45,4 @@
 ..\obj\main.o: F:\Keil\ARM\ARMCC\Bin\..\include\string.h
 ..\obj\main.o: ..\HARDWARE\OLED2\OLED2.h
 ..\obj\main.o: ..\HARDWARE\air780\bsp_air780.h
+..\obj\main.o: ..\HARDWARE\menu\bsp_menu.h
