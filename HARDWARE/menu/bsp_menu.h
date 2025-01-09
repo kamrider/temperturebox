@@ -8,6 +8,9 @@
 #include "bsp_key.h"
 #include "bsp_ds18b20.h"
 
+// 声明外部变量
+extern float temperature;
+
 // 菜单状态枚举
 typedef enum {
     MENU_MAIN,         // 主菜单
@@ -39,6 +42,6 @@ void Menu_KeyHandle(void);
 
 extern MenuState currentMenu;
 extern uint8_t needRefreshMenu;
-extern SystemStatus sysStatus;  // 系统状态全局变量
+extern SystemStatus sysStatus;
 
 #endif

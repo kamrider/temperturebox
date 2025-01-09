@@ -23,6 +23,7 @@
 #include "bsp_usart.h"
 #include "OLED2.h"
 #include "bsp_air780.h"
+#include "bsp_menu.h"
 
 extern uint16_t CCR1_Val;
 uint16_t Kms10;
@@ -55,7 +56,8 @@ void Isr_Init()
 int main(void)
 {
 	delay_init();
-	OLED_Init();
+	// OLED_Init();  // 不再使用OLED1
+	OLED2_Init();    // 只使用OLED2
 	Key_GPIO_Config();
 	USART_Config();
 	USART2_Init(115200);
@@ -70,7 +72,7 @@ int main(void)
 	
 //	AIR780_Init();
 //	delay_ms(2000);  // 给模块更多启动时间
-	
+	  Menu_Init();
 	while(1)
 	{	
 //		if(Key_Scan(GPIOA,GPIO_Pin_0))
@@ -78,36 +80,43 @@ int main(void)
 //		
 //		if(Key_Scan(GPIOC,GPIO_Pin_13))
 //			PID.setTemp -= 0.5;
-		
-		temperature = DS18B20_GetTemp_SkipRom();
-		// 在OLED2上显示实时温度和目标温度
-		OLED2_ShowString(1,1,"Temp:");                 // 显示当前温度标签
-		OLED2_ShowNum(1,6,(int)temperature,2);         // 显示整数部分
-		OLED2_ShowString(1,8,".");                     // 显示小数点
-		OLED2_ShowNum(1,9,(int)((temperature-(int)temperature)*10),1); // 显示小数部分
-		OLED2_ShowString(1,10,"C");                    // 显示摄氏度符号
-		
-		OLED2_ShowString(2,1,"Target:");               // 显示目标温度标签
-		OLED2_ShowNum(2,8,(int)PID.setTemp,2);        // 显示整数部分
-		OLED2_ShowString(2,10,".");                    // 显示小数点
-		OLED2_ShowNum(2,11,(int)((PID.setTemp-(int)PID.setTemp)*10),1); // 显示小数部分
-		OLED2_ShowString(2,12,"C");                    // 显示摄氏度符号
-		
-		// 原有的OLED显示代码保持不变
-		OLED_ShowString(0,0,"Temperatrue:",16);
-		OLED_ShowFloatNumber(0,16,temperature,16);
-		OLED_ShowString(44,16,"degrees",16);				
-		OLED_ShowString(0,32,"Target temp:",16);
-		OLED_ShowFloatNumber(0,48,PID.setTemp,16);
-		OLED_ShowString(33,48,"degrees",16);	
-		OLED_Refresh();
-		
-		PID_Calculate();
-		CCR1_Val = PID.OUT;  // PID.OUT值越大，制冷越强
 
-		GENERAL_TIM_Init();
-		printf ( "%.2f,%.2f,%.2f,%.2f,%.2f,%.d\n",PID.setTemp,DS18B20_GetTemp_SkipRom (),PID.t1,PID.t2,PID.t3,CCR1_Val);
+//		// 获取温度并进行PID控制
+		temperature = DS18B20_GetTemp_SkipRom();
 		
+		
+//			        Menu_KeyHandle();
+//        Menu_Display();	
+		
+		
+//		// 在OLED2上显示实时温度和目标温度
+//		OLED2_ShowString(1,1,"Temp:");                 // 显示当前温度标签
+//		OLED2_ShowNum(1,6,(int)temperature,2);         // 显示整数部分
+//		OLED2_ShowString(1,8,".");                     // 显示小数点
+//		OLED2_ShowNum(1,9,(int)((temperature-(int)temperature)*10),1); // 显示小数部分
+//		OLED2_ShowString(1,10,"C");                    // 显示摄氏度符号
+//		
+//		OLED2_ShowString(2,1,"Target:");               // 显示目标温度标签
+//		OLED2_ShowNum(2,8,(int)PID.setTemp,2);        // 显示整数部分
+//		OLED2_ShowString(2,10,".");                    // 显示小数点
+//		OLED2_ShowNum(2,11,(int)((PID.setTemp-(int)PID.setTemp)*10),1); // 显示小数部分
+//		OLED2_ShowString(2,12,"C");                    // 显示摄氏度符号
+//		
+//		// 原有的OLED显示代码保持不变
+//		OLED_ShowString(0,0,"Temperatrue:",16);
+//		OLED_ShowFloatNumber(0,16,temperature,16);
+//		OLED_ShowString(44,16,"degrees",16);				
+//		OLED_ShowString(0,32,"Target temp:",16);
+//		OLED_ShowFloatNumber(0,48,PID.setTemp,16);
+//		OLED_ShowString(33,48,"degrees",16);	
+//		OLED_Refresh();
+//		
+//		PID_Calculate();
+//		CCR1_Val = PID.OUT;  // PID.OUT值越大，制冷越强
+
+//		GENERAL_TIM_Init();
+//		printf ( "%.2f,%.2f,%.2f,%.2f,%.2f,%.d\n",PID.setTemp,DS18B20_GetTemp_SkipRom (),PID.t1,PID.t2,PID.t3,CCR1_Val);
+//		
 //		if(AIR780_MQTT_Publish(temperature) != 1)
 //		{
 //			printf("MQTT发送失败\r\n");
@@ -115,6 +124,41 @@ int main(void)
 //		}
 		
 		delay_ms(50);
+		// 处理按键和菜单
+        Menu_KeyHandle();
+        
+        // 强制刷新主菜单的温度显示
+        if(currentMenu == MENU_MAIN || currentMenu == MENU_SET_TEMP) {
+            needRefreshMenu = 1;
+        }
+        Menu_Display();
+        
+        // 根据系统状态调整PID控制
+        if(sysStatus.workMode == MODE_COOLING) {
+            PID_Calculate();
+            CCR1_Val = PID.OUT;
+        }
+        else if(sysStatus.workMode == MODE_HEATING) {
+            PID_Calculate();
+            CCR1_Val = 500 - PID.OUT;
+        }
+        else {  // MODE_STANDBY
+            CCR1_Val = 0;
+        }
+
+        GENERAL_TIM_Init();
+        
+        // 调试输出
+        printf("%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d,%d\n", 
+            PID.setTemp,
+            temperature,
+            PID.t1,
+            PID.t2,
+            PID.t3,
+            CCR1_Val,
+            sysStatus.workMode,
+            sysStatus.humidOn
+        );
 	}
 }
 
