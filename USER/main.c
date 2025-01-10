@@ -128,7 +128,7 @@ int main(void)
         Menu_KeyHandle();
         
         // 强制刷新主菜单的温度显示
-        if(currentMenu == MENU_MAIN || currentMenu == MENU_SET_TEMP) {
+        if(currentMenu == MENU_MAIN || currentMenu == MENU_TEMP_SET) {
             needRefreshMenu = 1;
         }
         Menu_Display();

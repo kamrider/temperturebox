@@ -14,16 +14,13 @@ void Menu_Init(void)
 
 void Menu_KeyHandle(void)
 {
-    // KEY1 (PE3, 低电平触发) - 用于切换选项或增加温度
+    // KEY1 (PE3) - 增加/切换选项
     if(Key_Scan(KEY1_GPIO_PORT, KEY1_GPIO_PIN))
     {
         switch(currentMenu)
         {
-            case MENU_MAIN:
-                currentMenu = MENU_MODE_SELECT;
-                break;
-                
             case MENU_MODE_SELECT:
+                // 循环切换：待机->制冷->加热
                 if(sysStatus.workMode == MODE_STANDBY) {
                     sysStatus.workMode = MODE_COOLING;
                 } else if(sysStatus.workMode == MODE_COOLING) {
@@ -33,52 +30,57 @@ void Menu_KeyHandle(void)
                 }
                 break;
                 
-            case MENU_HUMID_SELECT:
-                sysStatus.humidOn = !sysStatus.humidOn;
+            case MENU_TEMP_SET:
+                // 增加温度（仅在制冷/加热模式）
+                PID.setTemp += 0.5f;
+                if(PID.setTemp > 35.0f) PID.setTemp = 35.0f;
                 break;
                 
-            case MENU_SET_TEMP:
-                // 增加目标温度，步进0.5度
-                PID.setTemp += 0.5f;
-                // 限制最高温度为35度
-                if(PID.setTemp > 35.0f) {
-                    PID.setTemp = 35.0f;
-                }
+            case MENU_HUMID_SET:
+                sysStatus.humidOn = !sysStatus.humidOn;
                 break;
         }
         needRefreshMenu = 1;
     }
     
-    // KEY2 (PE4, 低电平触发) - 用于切换菜单或减少温度
+    // KEY2 (PE4) - 减少/返回
     if(Key_Scan(KEY2_GPIO_PORT, KEY2_GPIO_PIN))
     {
         switch(currentMenu)
         {
-            case MENU_MODE_SELECT:
-                currentMenu = MENU_HUMID_SELECT;
-                break;
-                
-            case MENU_HUMID_SELECT:
-                currentMenu = MENU_SET_TEMP;
-                break;
-                
-            case MENU_SET_TEMP:
-                // 减少目标温度，步进0.5度
+            case MENU_TEMP_SET:
+                // 减少温度
                 PID.setTemp -= 0.5f;
-                // 限制最低温度为15度
-                if(PID.setTemp < 15.0f) {
-                    PID.setTemp = 15.0f;
-                }
+                if(PID.setTemp < 15.0f) PID.setTemp = 15.0f;
                 break;
         }
         needRefreshMenu = 1;
     }
     
-    // KEY3 (PA0, 高电平触发) - 用于确认并返回主菜单
+    // KEY3 (PA0) - 确认/下一步
     if(Key_Scan_High(KEY3_GPIO_PORT, KEY3_GPIO_PIN))
     {
-        if(currentMenu != MENU_MAIN) {
-            currentMenu = MENU_MAIN;
+        switch(currentMenu)
+        {
+            case MENU_MAIN:
+                currentMenu = MENU_MODE_SELECT;
+                break;
+                
+            case MENU_MODE_SELECT:
+                if(sysStatus.workMode == MODE_STANDBY) {
+                    currentMenu = MENU_HUMID_SET;  // 待机模式直接到加湿设置
+                } else {
+                    currentMenu = MENU_TEMP_SET;   // 制冷/加热模式先设置温度
+                }
+                break;
+                
+            case MENU_TEMP_SET:
+                currentMenu = MENU_HUMID_SET;      // 温度设置完成后到加湿设置
+                break;
+                
+            case MENU_HUMID_SET:
+                currentMenu = MENU_MAIN;           // 设置完成返回主菜单
+                break;
         }
         needRefreshMenu = 1;
     }
@@ -93,58 +95,59 @@ void Menu_Display(void)
     switch(currentMenu)
     {
         case MENU_MAIN:
-            // 第1行：当前模式
+            // 显示当前状态
             OLED2_ShowString(1,1,"Mode:");
             if(sysStatus.workMode == MODE_STANDBY)
                 OLED2_ShowString(1,6,"Standby");
             else if(sysStatus.workMode == MODE_COOLING)
                 OLED2_ShowString(1,6,"Cool");
-            else if(sysStatus.workMode == MODE_HEATING)
+            else
                 OLED2_ShowString(1,6,"Heat");
             
-            // 第2行：当前温度
             OLED2_ShowString(2,1,"Temp:");
-            OLED2_ShowNum(2,6,(int)temperature,2);         // 使用temperature变量
+            OLED2_ShowNum(2,6,(int)temperature,2);
             OLED2_ShowString(2,8,".");
             OLED2_ShowNum(2,9,(int)((temperature-(int)temperature)*10),1);
             OLED2_ShowString(2,10,"C");
             
-            // 第3行：目标温度
-            OLED2_ShowString(3,1,"Target:");
-            OLED2_ShowNum(3,8,(int)PID.setTemp,2);
-            OLED2_ShowString(3,10,".");
-            OLED2_ShowNum(3,11,(int)((PID.setTemp-(int)PID.setTemp)*10),1);
-            OLED2_ShowString(3,12,"C");
+            if(sysStatus.workMode != MODE_STANDBY) {
+                OLED2_ShowString(3,1,"Target:");
+                OLED2_ShowNum(3,8,(int)PID.setTemp,2);
+                OLED2_ShowString(3,10,".");
+                OLED2_ShowNum(3,11,(int)((PID.setTemp-(int)PID.setTemp)*10),1);
+                OLED2_ShowString(3,12,"C");
+            }
             
-            // 第4行：加湿状态
             OLED2_ShowString(4,1,"Humid:");
             OLED2_ShowString(4,7,sysStatus.humidOn ? "ON" : "OFF");
             break;
             
         case MENU_MODE_SELECT:
             OLED2_ShowString(1,1,"Select Mode:");
+            OLED2_ShowString(2,1,"->");
             if(sysStatus.workMode == MODE_STANDBY)
-                OLED2_ShowString(2,1,"-> Standby");
+                OLED2_ShowString(2,3,"Standby");
             else if(sysStatus.workMode == MODE_COOLING)
-                OLED2_ShowString(2,1,"-> Cool");
-            else if(sysStatus.workMode == MODE_HEATING)
-                OLED2_ShowString(2,1,"-> Heat");
-            break;
-            
-        case MENU_HUMID_SELECT:
-            OLED2_ShowString(1,1,"Humid Control:");
-            if(sysStatus.humidOn)
-                OLED2_ShowString(2,1,"-> ON");
+                OLED2_ShowString(2,3,"Cool");
             else
-                OLED2_ShowString(2,1,"-> OFF");
+                OLED2_ShowString(2,3,"Heat");
+            OLED2_ShowString(4,1,"KEY1:Change KEY3:OK");
             break;
             
-        case MENU_SET_TEMP:
-            OLED2_ShowString(1,1,"Set Target:");
+        case MENU_TEMP_SET:
+            OLED2_ShowString(1,1,"Set Temperature");
             OLED2_ShowNum(2,1,(int)PID.setTemp,2);
             OLED2_ShowString(2,3,".");
             OLED2_ShowNum(2,4,(int)((PID.setTemp-(int)PID.setTemp)*10),1);
             OLED2_ShowString(2,5,"C");
+            OLED2_ShowString(4,1,"K1:+ K2:- K3:OK");
+            break;
+            
+        case MENU_HUMID_SET:
+            OLED2_ShowString(1,1,"Humid Control:");
+            OLED2_ShowString(2,1,"->");
+            OLED2_ShowString(2,3,sysStatus.humidOn ? "ON" : "OFF");
+            OLED2_ShowString(4,1,"KEY1:Change KEY3:OK");
             break;
     }
     

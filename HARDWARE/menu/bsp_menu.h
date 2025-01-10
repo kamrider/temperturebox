@@ -14,11 +14,9 @@ extern float temperature;
 // 菜单状态枚举
 typedef enum {
     MENU_MAIN,         // 主菜单
-    MENU_MODE_SELECT,  // 模式选择（制冷/加热）
-    MENU_HUMID_SELECT, // 加湿选择
-    MENU_COOLING,      // 制冷模式
-    MENU_HEATING,      // 加热模式
-    MENU_SET_TEMP      // 温度设置
+    MENU_MODE_SELECT,  // 模式选择
+    MENU_TEMP_SET,     // 温度设置（仅制冷/加热模式）
+    MENU_HUMID_SET,    // 加湿设置
 } MenuState;
 
 // 工作模式枚举

@@ -3,7 +3,7 @@
 <title>Static Call Graph - [..\OBJ\OLED.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image ..\OBJ\OLED.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Fri Jan 10 02:13:40 2025
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Fri Jan 10 09:43:55 2025
 <BR><P>
 <H3>Maximum Stack Usage =        200 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -405,7 +405,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[46]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[5b]"></a>Menu_KeyHandle</STRONG> (Thumb, 256 bytes, Stack size 8 bytes, bsp_menu.o(.text))
+<P><STRONG><a name="[5b]"></a>Menu_KeyHandle</STRONG> (Thumb, 276 bytes, Stack size 8 bytes, bsp_menu.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 28<LI>Call Chain = Menu_KeyHandle &rArr; __aeabi_fadd &rArr; _float_epilogue
 </UL>
 <BR>[Calls]<UL><LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fadd
@@ -419,7 +419,7 @@ Global Symbols
 <LI><a href="#[46]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[5c]"></a>Menu_Display</STRONG> (Thumb, 582 bytes, Stack size 24 bytes, bsp_menu.o(.text))
+<P><STRONG><a name="[5c]"></a>Menu_Display</STRONG> (Thumb, 620 bytes, Stack size 24 bytes, bsp_menu.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = Menu_Display &rArr; OLED2_ShowNum &rArr; OLED2_ShowChar &rArr; OLED2_SetCursor &rArr; OLED2_WriteCommand &rArr; OLED2_I2C_SendByte
 </UL>
 <BR>[Calls]<UL><LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OLED2_ShowNum
