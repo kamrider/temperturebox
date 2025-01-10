@@ -24,6 +24,8 @@
 #include "OLED2.h"
 #include "bsp_air780.h"
 #include "bsp_menu.h"
+#include "bsp_dht22.h"
+
 
 extern uint16_t CCR1_Val;
 uint16_t Kms10;
@@ -31,7 +33,7 @@ uint16_t Kms500;
 extern float temperature;
 extern float iSetVal;
 //extern float Temp[0],Temp[1],Temp[2];
-
+float humidity = 0.0f;
 
 void Isr_Init()
 {
@@ -66,10 +68,7 @@ int main(void)
 	DS18B20_Init();
 	PID_Init();
 	Isr_Init();
-	OLED2_Init();
-	OLED2_ShowString(1,1,"OLED2 Test");           
-	OLED2_ShowString(2,1,"Temp:");                
-	
+	DHT22_Init();  // 添加DHT22初始化
 //	AIR780_Init();
 //	delay_ms(2000);  // 给模块更多启动时间
 	  Menu_Init();
@@ -83,7 +82,17 @@ int main(void)
 
 //		// 获取温度并进行PID控制
 		temperature = DS18B20_GetTemp_SkipRom();
-		
+		if(DHT22_Read_Data(&temperature, &humidity) == 0) {
+			// 显示湿度
+			OLED2_ShowString(3,1,"Humidity:");
+			OLED2_ShowNum(3,10,(int)humidity,2);
+			OLED2_ShowString(3,12,".");
+			OLED2_ShowNum(3,13,(int)((humidity-(int)humidity)*10),1);
+			OLED2_ShowString(3,14,"%");
+		} else {
+			// 显示错误信息
+			OLED2_ShowString(3,1,"DHT22 Error    ");
+		}
 		
 //			        Menu_KeyHandle();
 //        Menu_Display();	
@@ -149,7 +158,7 @@ int main(void)
         GENERAL_TIM_Init();
         
         // 调试输出
-        printf("%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d,%d\n", 
+        printf("%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d,%d,%.1f\n", 
             PID.setTemp,
             temperature,
             PID.t1,
@@ -157,7 +166,8 @@ int main(void)
             PID.t3,
             CCR1_Val,
             sysStatus.workMode,
-            sysStatus.humidOn
+            sysStatus.humidOn,
+            humidity    // 添加湿度显示
         );
 	}
 }

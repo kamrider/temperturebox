@@ -46,3 +46,4 @@
 ..\obj\main.o: ..\HARDWARE\OLED2\OLED2.h
 ..\obj\main.o: ..\HARDWARE\air780\bsp_air780.h
 ..\obj\main.o: ..\HARDWARE\menu\bsp_menu.h
+..\obj\main.o: ..\HARDWARE\DHT22\bsp_dht22.h
