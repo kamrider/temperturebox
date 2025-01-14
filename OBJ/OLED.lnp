@@ -10,6 +10,8 @@
 "..\obj\bsp_air780.o"
 "..\obj\bsp_menu.o"
 "..\obj\bsp_dht22.o"
+"..\obj\bsp_relay.o"
+"..\obj\bsp_humid.o"
 "..\obj\bsp_generaltim.o"
 "..\obj\pid.o"
 "..\obj\timer.o"

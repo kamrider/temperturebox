@@ -25,6 +25,8 @@
 #include "bsp_air780.h"
 #include "bsp_menu.h"
 #include "bsp_dht22.h"
+#include "bsp_relay.h"
+#include "bsp_humid.h"
 
 
 extern uint16_t CCR1_Val;
@@ -34,6 +36,9 @@ extern float temperature;
 extern float iSetVal;
 //extern float Temp[0],Temp[1],Temp[2];
 float humidity = 0.0f;
+
+// 在main函数外部定义一个变量保存上一次的有效湿度值
+static float last_valid_humidity = 0.0f;
 
 void Isr_Init()
 {
@@ -69,9 +74,11 @@ int main(void)
 	PID_Init();
 	Isr_Init();
 	DHT22_Init();  // 添加DHT22初始化
-//	AIR780_Init();
-//	delay_ms(2000);  // 给模块更多启动时间
+	AIR780_Init();
+	delay_ms(2000);  // 给模块更多启动时间
 	  Menu_Init();
+	RELAY_Init();
+	HUMID_Init();
 	while(1)
 	{	
 //		if(Key_Scan(GPIOA,GPIO_Pin_0))
@@ -83,16 +90,15 @@ int main(void)
 //		// 获取温度并进行PID控制
 		temperature = DS18B20_GetTemp_SkipRom();
 		if(DHT22_Read_Data(&temperature, &humidity) == 0) {
-			// 显示湿度
-			OLED2_ShowString(3,1,"Humidity:");
-			OLED2_ShowNum(3,10,(int)humidity,2);
-			OLED2_ShowString(3,12,".");
-			OLED2_ShowNum(3,13,(int)((humidity-(int)humidity)*10),1);
-			OLED2_ShowString(3,14,"%");
-		} else {
-			// 显示错误信息
-			OLED2_ShowString(3,1,"DHT22 Error    ");
-		}
+			// 读取成功时更新last_valid_humidity
+			last_valid_humidity = humidity;
+		} 
+		// 不管读取成功与否，都显示湿度值（使用最后一次有效值）
+		OLED2_ShowString(3,1,"Humidity:");
+		OLED2_ShowNum(3,10,(int)last_valid_humidity,2);
+		OLED2_ShowString(3,12,".");
+		OLED2_ShowNum(3,13,(int)((last_valid_humidity-(int)last_valid_humidity)*10),1);
+		OLED2_ShowString(3,14,"%");
 		
 //			        Menu_KeyHandle();
 //        Menu_Display();	
@@ -126,11 +132,11 @@ int main(void)
 //		GENERAL_TIM_Init();
 //		printf ( "%.2f,%.2f,%.2f,%.2f,%.2f,%.d\n",PID.setTemp,DS18B20_GetTemp_SkipRom (),PID.t1,PID.t2,PID.t3,CCR1_Val);
 //		
-//		if(AIR780_MQTT_Publish(temperature) != 1)
-//		{
-//			printf("MQTT发送失败\r\n");
-//			AIR780_Init();
-//		}
+		if(AIR780_MQTT_Publish(temperature, last_valid_humidity) != 1)
+		{
+			printf("MQTT发送失败\r\n");
+			AIR780_Init();
+		}
 		
 		delay_ms(50);
 		// 处理按键和菜单
@@ -146,13 +152,37 @@ int main(void)
         if(sysStatus.workMode == MODE_COOLING) {
             PID_Calculate();
             CCR1_Val = PID.OUT;
+            RELAY_OFF();
         }
         else if(sysStatus.workMode == MODE_HEATING) {
-            PID_Calculate();
-            CCR1_Val = 500 - PID.OUT;
+            // 只在主菜单界面且已完成温度设置时才进行控制
+            if(currentMenu == MENU_MAIN) {  
+                float tempDiff = sysStatus.heatingTemp - temperature;
+                
+                if(RELAY_GetState()) {  // 继电器开启状态
+                    if(tempDiff <= -3.0f) {  // 温度超过目标3度
+                        RELAY_OFF();
+                    }
+                } else {  // 继电器关闭状态
+                    if(tempDiff >= 2.0f) {  // 温度低于目标2度
+                        RELAY_ON();
+                    }
+                }
+            } else {
+                RELAY_OFF();  // 非主菜单界面保持关闭状态
+            }
+            CCR1_Val = 0;  // 加热模式下不使用PWM制冷
         }
         else {  // MODE_STANDBY
             CCR1_Val = 0;
+            RELAY_OFF();
+        }
+
+        // 处理加湿控制
+        if(sysStatus.humidOn) {
+            HUMID_ON();
+        } else {
+            HUMID_OFF();
         }
 
         GENERAL_TIM_Init();

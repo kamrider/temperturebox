@@ -30,6 +30,7 @@ typedef enum {
 typedef struct {
     WorkMode workMode;    // 当前工作模式
     uint8_t humidOn;      // 加湿开关状态
+    float heatingTemp;    // 加热模式的目标温度
 } SystemStatus;
 
 // 函数声明
@@ -41,5 +42,8 @@ void Menu_KeyHandle(void);
 extern MenuState currentMenu;
 extern uint8_t needRefreshMenu;
 extern SystemStatus sysStatus;
+
+#define TEMP_THRESHOLD   0.5f    // 温度阈值，避免频繁切换
+#define RELAY_DELAY_MS   1000    // 继电器切换最小间隔时间（毫秒）
 
 #endif
