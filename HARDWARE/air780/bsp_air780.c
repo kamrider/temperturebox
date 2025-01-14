@@ -186,21 +186,18 @@ uint8_t AIR780_MQTT_Connect(void)
     return 1;
 }
 
-uint8_t AIR780_MQTT_Publish(float temp_value)
+uint8_t AIR780_MQTT_Publish(float temp_value, float humid_value)
 {
     char mqtt_cmd[512];
+
     
-    // 构建MQTT发布命令
-    // AT+MPUB="topic", qos, retain, "payload"
-    // 其中:
-    // - topic: 发布主题
-    // - qos: 服务质量(0-最多发送一次)
-    // - retain: 是否保留消息(0-不保留)
-    // - payload: JSON格式的数据
-    sprintf(mqtt_cmd, "AT+MPUB=\"%s\",0,0,\"{\\22id\\22:\\22123\\22,\\22params\\22:{\\22%s\\22:{\\22value\\22:%.2f}}}\"\r\n",
+    // 构建包含温度和湿度的JSON数据
+    sprintf(mqtt_cmd, "AT+MPUB=\"%s\",0,0,\"{\\22id\\22:\\22123\\22,\\22params\\22:{\\22%s\\22:{\\22value\\22:%.2f},\\22%s\\22:{\\22value\\22:%.1f}}}\"\r\n",
             MQTT_PUB_TOPIC,
-            MQTT_PARAM_NAME,
-            temp_value);
+            MQTT_TEMP_PARAM,
+            temp_value,
+            MQTT_HUMID_PARAM,
+            humid_value);
             
     AIR780_SendCmd(mqtt_cmd);
     if(AIR780_WaitResponse("OK\r\n", 5000) != 1) {
