@@ -27,6 +27,7 @@
 #include "bsp_dht22.h"
 #include "bsp_relay.h"
 #include "bsp_humid.h"
+#include "bsp_fan.h"
 
 
 extern uint16_t CCR1_Val;
@@ -39,6 +40,8 @@ float humidity = 0.0f;
 
 // 在main函数外部定义一个变量保存上一次的有效湿度值
 static float last_valid_humidity = 0.0f;
+
+float unused_temp;  // 添加一个临时变量来接收DHT22的温度值
 
 void Isr_Init()
 {
@@ -79,6 +82,8 @@ int main(void)
 	  Menu_Init();
 	RELAY_Init();
 	HUMID_Init();
+	FAN_Init();     // 添加风扇初始化
+
 	while(1)
 	{	
 //		if(Key_Scan(GPIOA,GPIO_Pin_0))
@@ -89,17 +94,27 @@ int main(void)
 
 //		// 获取温度并进行PID控制
 		temperature = DS18B20_GetTemp_SkipRom();
-		if(DHT22_Read_Data(&temperature, &humidity) == 0) {
-			// 读取成功时更新last_valid_humidity
+// 只在主菜单界面显示温度
+if(currentMenu == MENU_MAIN) {
+    OLED2_ShowString(2,1,"T:");
+    OLED2_ShowNum(2,3,(int)temperature,2);
+    OLED2_ShowString(2,5,".");
+    OLED2_ShowNum(2,6,(int)((temperature-(int)temperature)*10),1);
+    OLED2_ShowString(2,7,"C");
+}
+delay_ms(100);
+		if(DHT22_Read_Data(&unused_temp, &humidity) == 0) {
 			last_valid_humidity = humidity;
 		} 
 		// 不管读取成功与否，都显示湿度值（使用最后一次有效值）
+        // 显示温度
+if(currentMenu == MENU_MAIN) {
 		OLED2_ShowString(3,1,"Humidity:");
 		OLED2_ShowNum(3,10,(int)last_valid_humidity,2);
 		OLED2_ShowString(3,12,".");
 		OLED2_ShowNum(3,13,(int)((last_valid_humidity-(int)last_valid_humidity)*10),1);
 		OLED2_ShowString(3,14,"%");
-		
+	}	
 //			        Menu_KeyHandle();
 //        Menu_Display();	
 		
@@ -143,16 +158,21 @@ int main(void)
         Menu_KeyHandle();
         
         // 强制刷新主菜单的温度显示
-        if(currentMenu == MENU_MAIN || currentMenu == MENU_TEMP_SET) {
-            needRefreshMenu = 1;
-        }
+//        if(currentMenu == MENU_MAIN || currentMenu == MENU_TEMP_SET) {
+//            needRefreshMenu = 1;
+//        }
         Menu_Display();
         
         // 根据系统状态调整PID控制
         if(sysStatus.workMode == MODE_COOLING) {
-            PID_Calculate();
-            CCR1_Val = PID.OUT;
-            RELAY_OFF();
+            // 只在主菜单界面且已完成温度设置时才进行控制
+            if(currentMenu == MENU_MAIN) {
+                PID_Calculate();
+                CCR1_Val = PID.OUT;
+            } else {
+                CCR1_Val = 0;  // 非主菜单界面停止制冷
+            }
+            RELAY_OFF();  // 制冷模式下继电器始终保持关闭
         }
         else if(sysStatus.workMode == MODE_HEATING) {
             // 只在主菜单界面且已完成温度设置时才进行控制
@@ -160,11 +180,11 @@ int main(void)
                 float tempDiff = sysStatus.heatingTemp - temperature;
                 
                 if(RELAY_GetState()) {  // 继电器开启状态
-                    if(tempDiff <= -3.0f) {  // 温度超过目标3度
+                    if(tempDiff <= -1.0f) {  // 温度超过目标1度
                         RELAY_OFF();
                     }
                 } else {  // 继电器关闭状态
-                    if(tempDiff >= 2.0f) {  // 温度低于目标2度
+                    if(tempDiff >= 1.0f) {  // 温度低于目标1度
                         RELAY_ON();
                     }
                 }
@@ -172,6 +192,27 @@ int main(void)
                 RELAY_OFF();  // 非主菜单界面保持关闭状态
             }
             CCR1_Val = 0;  // 加热模式下不使用PWM制冷
+        }
+        else if(sysStatus.workMode == MODE_DEHUMID) {
+            // 只在主菜单界面进行除湿控制
+            if(currentMenu == MENU_MAIN) {
+                // 使用定时器中断来控制风扇和加热器
+                if(Kms500 >= 5) {  // 每500ms检查一次
+                    Kms500 = 0;
+                    sysStatus.fanState = !sysStatus.fanState;  // 翻转风扇状态
+                    if(sysStatus.fanState) {
+                        FAN_ON();
+                        RELAY_ON();  // 风扇开启时同时开启加热
+                    } else {
+                        FAN_OFF();
+                        RELAY_OFF(); // 风扇关闭时同时关闭加热
+                    }
+                }
+            } else {
+                FAN_OFF();    // 非主菜单界面保持关闭状态
+                RELAY_OFF();  // 同时关闭加热
+            }
+            CCR1_Val = 0;   // 除湿模式下不使用PWM制冷
         }
         else {  // MODE_STANDBY
             CCR1_Val = 0;
@@ -201,4 +242,6 @@ int main(void)
         );
 	}
 }
+
+
 

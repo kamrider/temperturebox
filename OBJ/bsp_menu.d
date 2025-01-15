@@ -36,3 +36,4 @@
 ..\obj\bsp_menu.o: ..\SYSTEM\PID\pid.h
 ..\obj\bsp_menu.o: ..\HARDWARE\KEY\bsp_key.h
 ..\obj\bsp_menu.o: ..\HARDWARE\ds18b20\bsp_ds18b20.h
+..\obj\bsp_menu.o: ..\HARDWARE\FAN\bsp_fan.h

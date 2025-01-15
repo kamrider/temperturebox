@@ -309,35 +309,37 @@ static void DS18B20_MatchRom ( void )
   * @param  无
   * @retval 温度值
   */
-float DS18B20_GetTemp_SkipRom ( void )
+float DS18B20_GetTemp_SkipRom(void)
 {
-	uint8_t tpmsb, tplsb;
-	short s_tem;
-	float f_tem;
-	
-	
-	DS18B20_SkipRom ();
-	DS18B20_WriteByte(0X44);				/* 开始转换 */
-	
-	
-	DS18B20_SkipRom ();
-  DS18B20_WriteByte(0XBE);				/* 读温度值 */
-	
-	tplsb = DS18B20_ReadByte();		 
-	tpmsb = DS18B20_ReadByte(); 
-	
-	
-	s_tem = tpmsb<<8;
-	s_tem = s_tem | tplsb;
-	
-	if( s_tem < 0 )		/* 负温度 */
-		f_tem = (~s_tem+1) * 0.0625;	
-	else
-		f_tem = s_tem * 0.0625;
-	
-	return f_tem; 	
-	
-	
+    uint8_t tpmsb, tplsb;
+    short s_tem;
+    float f_tem;
+    
+    // 禁止中断
+    __disable_irq();
+    
+    DS18B20_SkipRom();
+    DS18B20_WriteByte(0X44);        // 开始转换
+                    // 等待转换完成
+    
+    DS18B20_SkipRom();
+    DS18B20_WriteByte(0XBE);        // 读温度值
+    
+    tplsb = DS18B20_ReadByte();     
+    tpmsb = DS18B20_ReadByte(); 
+    
+    // 恢复中断
+    __enable_irq();
+    
+    s_tem = tpmsb<<8;
+    s_tem = s_tem | tplsb;
+    
+    if(s_tem < 0)     // 负温度
+        f_tem = (~s_tem+1) * 0.0625;    
+    else
+        f_tem = s_tem * 0.0625;
+    
+    return f_tem;     
 }
 
 

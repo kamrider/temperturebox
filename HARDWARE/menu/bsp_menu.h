@@ -24,6 +24,7 @@ typedef enum {
     MODE_STANDBY,    // 待机
     MODE_COOLING,    // 制冷
     MODE_HEATING,    // 加热
+    MODE_DEHUMID,    // 除湿
 } WorkMode;
 
 // 系统状态结构体
@@ -31,6 +32,7 @@ typedef struct {
     WorkMode workMode;    // 当前工作模式
     uint8_t humidOn;      // 加湿开关状态
     float heatingTemp;    // 加热模式的目标温度
+    uint8_t fanState;     // 风扇状态
 } SystemStatus;
 
 // 函数声明

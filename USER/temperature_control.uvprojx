@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\HARDWARE\LED;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\USER;..\STM32F10x_FWLib\inc;..\CORE;..\HARDWARE\KEY;..\HARDWARE\OLED;..\HARDWARE\ds18b20;..\SYSTEM\dwt_delay;..\SYSTEM\SysTick;..\SYSTEM\General Time;..\STM32F10x_FWLib\inc;..\USER;..\SYSTEM\PID;..\SYSTEM\timer;..\SYSTEM\General Time;..\SYSTEM\PID;..\SYSTEM\usart;..\HARDWARE\OLED2;..\HARDWARE\air780;..\HARDWARE\menu;..\HARDWARE\DHT22;..\HARDWARE\RELAY;..\HARDWARE\HUMID</IncludePath>
+              <IncludePath>..\HARDWARE\LED;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\USER;..\STM32F10x_FWLib\inc;..\CORE;..\HARDWARE\KEY;..\HARDWARE\OLED;..\HARDWARE\ds18b20;..\SYSTEM\dwt_delay;..\SYSTEM\SysTick;..\SYSTEM\General Time;..\STM32F10x_FWLib\inc;..\USER;..\SYSTEM\PID;..\SYSTEM\timer;..\SYSTEM\General Time;..\SYSTEM\PID;..\SYSTEM\usart;..\HARDWARE\OLED2;..\HARDWARE\air780;..\HARDWARE\menu;..\HARDWARE\DHT22;..\HARDWARE\RELAY;..\HARDWARE\HUMID;..\HARDWARE\FAN</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -451,6 +451,11 @@
               <FileName>bsp_humid.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\HUMID\bsp_humid.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_fan.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\FAN\bsp_fan.c</FilePath>
             </File>
           </Files>
         </Group>

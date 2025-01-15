@@ -49,3 +49,4 @@
 ..\obj\main.o: ..\HARDWARE\DHT22\bsp_dht22.h
 ..\obj\main.o: ..\HARDWARE\RELAY\bsp_relay.h
 ..\obj\main.o: ..\HARDWARE\HUMID\bsp_humid.h
+..\obj\main.o: ..\HARDWARE\FAN\bsp_fan.h

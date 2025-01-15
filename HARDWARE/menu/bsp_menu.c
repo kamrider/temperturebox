@@ -1,9 +1,9 @@
 #include "bsp_menu.h"
-
+#include "bsp_fan.h"
 MenuState currentMenu = MENU_MAIN;
 uint8_t needRefreshMenu = 1;
 SystemStatus sysStatus = {MODE_STANDBY, 0, 25.0f};  // 初始化加热温度为25度
-
+extern uint16_t Kms500;
 void Menu_Init(void)
 {
     currentMenu = MENU_MAIN;
@@ -21,11 +21,13 @@ void Menu_KeyHandle(void)
         switch(currentMenu)
         {
             case MENU_MODE_SELECT:
-                // 循环切换：待机->制冷->加热
+                // 循环切换：待机->制冷->加热->除湿
                 if(sysStatus.workMode == MODE_STANDBY) {
                     sysStatus.workMode = MODE_COOLING;
                 } else if(sysStatus.workMode == MODE_COOLING) {
                     sysStatus.workMode = MODE_HEATING;
+                } else if(sysStatus.workMode == MODE_HEATING) {
+                    sysStatus.workMode = MODE_DEHUMID;
                 } else {
                     sysStatus.workMode = MODE_STANDBY;
                 }
@@ -56,8 +58,10 @@ void Menu_KeyHandle(void)
         switch(currentMenu)
         {
             case MENU_MODE_SELECT:
-                // 反向循环切换：待机->加热->制冷
+                // 反向循环切换
                 if(sysStatus.workMode == MODE_STANDBY) {
+                    sysStatus.workMode = MODE_DEHUMID;
+                } else if(sysStatus.workMode == MODE_DEHUMID) {
                     sysStatus.workMode = MODE_HEATING;
                 } else if(sysStatus.workMode == MODE_HEATING) {
                     sysStatus.workMode = MODE_COOLING;
@@ -96,9 +100,14 @@ void Menu_KeyHandle(void)
                 
             case MENU_MODE_SELECT:
                 if(sysStatus.workMode == MODE_STANDBY) {
-                    currentMenu = MENU_HUMID_SET;  // 待机模式直接到加湿设置
+                    currentMenu = MENU_HUMID_SET;  // 待机模式到加湿设置
+                } else if(sysStatus.workMode == MODE_DEHUMID) {
+                    currentMenu = MENU_MAIN;       // 除湿模式直接返回主菜单
+                    sysStatus.fanState = 0;        // 初始化风扇状态为关闭
+                    FAN_OFF();                     // 确保风扇关闭
+                    Kms500 = 0;                    // 重置计时器
                 } else {
-                    currentMenu = MENU_TEMP_SET;   // 制冷/加热模式先设置温度
+                    currentMenu = MENU_TEMP_SET;   // 制冷/加热模式到温度设置
                 }
                 break;
                 
@@ -129,14 +138,12 @@ void Menu_Display(void)
                 OLED2_ShowString(1,6,"Standby");
             else if(sysStatus.workMode == MODE_COOLING)
                 OLED2_ShowString(1,6,"Cool");
-            else
+            else if(sysStatus.workMode == MODE_HEATING)
                 OLED2_ShowString(1,6,"Heat");
+            else
+                OLED2_ShowString(1,6,"Dehum");    // 显示除湿模式
             
-            OLED2_ShowString(2,1,"T:");
-            OLED2_ShowNum(2,3,(int)temperature,2);
-            OLED2_ShowString(2,5,".");
-            OLED2_ShowNum(2,6,(int)((temperature-(int)temperature)*10),1);
-            OLED2_ShowString(2,7,"C");
+
             
             if(sysStatus.workMode != MODE_STANDBY) {
                 if(sysStatus.workMode == MODE_HEATING) {
@@ -162,8 +169,10 @@ void Menu_Display(void)
                 OLED2_ShowString(2,3,"Standby");
             else if(sysStatus.workMode == MODE_COOLING)
                 OLED2_ShowString(2,3,"Cool");
-            else
+            else if(sysStatus.workMode == MODE_HEATING)
                 OLED2_ShowString(2,3,"Heat");
+            else
+                OLED2_ShowString(2,3,"Dehum");    // 添加除湿模式显示
             OLED2_ShowString(4,1,"KEY1:Change KEY3:OK");
             break;
             

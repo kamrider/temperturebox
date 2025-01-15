@@ -9,9 +9,9 @@ PID_struct PID;
 void PID_Init()
 {
 	PID.setTemp = 17.0;
-	PID.Kp = 20.0;
-	PID.Ti = 0.002;
-	PID.Td = 0.05;
+	PID.Kp = 47.0;
+	PID.Ti = 0.003;
+	PID.Td = 0.15;
 	
 	PID.eLast = 0.0;
 	PID.OUT = 0.0;

@@ -3,6 +3,7 @@
 #include "pid.h"
 
 extern uint16_t Kms10;
+extern uint16_t Kms500;
 extern PID_struct PID;
  
 void Timer4_init()	//T4 10ms时钟
@@ -33,4 +34,10 @@ TIM_ITConfig(TIM4,TIM_IT_Update,ENABLE); //向上计数溢出产生中断
 		Kms10++;
 //    PID.tFlag++;
 	}
+
+    // 每50次（500ms）增加Kms500
+    if(Kms10 >= 50) {
+        Kms10 = 0;
+        Kms500++;
+    }
 }

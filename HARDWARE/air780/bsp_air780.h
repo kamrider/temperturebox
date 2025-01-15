@@ -17,7 +17,7 @@
 #define MQTT_SUB_TOPIC   "$sys/hCZEHFO5sd/tempandshidu/thing/property/post/reply"
 #define MQTT_PUB_TOPIC   "$sys/hCZEHFO5sd/tempandshidu/thing/property/post"
 #define MQTT_TEMP_PARAM  "temp_value"     // 温度参数名
-#define MQTT_HUMID_PARAM "humid_value"    // 湿度参数名
+#define MQTT_HUMID_PARAM "humidity_value"    // 湿度参数名
 
 // 函数声明
 void AIR780_Init(void);
