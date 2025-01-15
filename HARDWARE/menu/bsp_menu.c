@@ -20,6 +20,10 @@ void Menu_KeyHandle(void)
     {
         switch(currentMenu)
         {
+            case MENU_MAIN:  // 添加主菜单下的处理
+                currentMenu = MENU_MODE_SELECT;
+                break;
+                
             case MENU_MODE_SELECT:
                 // 循环切换：待机->制冷->加热->除湿
                 if(sysStatus.workMode == MODE_STANDBY) {
@@ -57,6 +61,10 @@ void Menu_KeyHandle(void)
     {
         switch(currentMenu)
         {
+            case MENU_MAIN:  // 添加主菜单下的处理
+                currentMenu = MENU_MODE_SELECT;
+                break;
+                
             case MENU_MODE_SELECT:
                 // 反向循环切换
                 if(sysStatus.workMode == MODE_STANDBY) {
