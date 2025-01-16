@@ -33,6 +33,7 @@ typedef struct {
     uint8_t humidOn;      // 加湿开关状态
     float heatingTemp;    // 加热模式的目标温度
     uint8_t fanState;     // 风扇状态
+    uint8_t dehumidCycles; // 除湿模式循环计数
 } SystemStatus;
 
 // 函数声明

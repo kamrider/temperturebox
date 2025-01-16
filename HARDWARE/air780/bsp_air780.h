@@ -9,13 +9,13 @@
 // MQTT服务器配置
 #define MQTT_SERVER      "mqtts.heclouds.com"
 #define MQTT_PORT        "1883"
-#define MQTT_PUBID       "hCZEHFO5sd"
-#define MQTT_DEVID       "tempandshidu"
-#define MQTT_TOKEN       "version=2018-10-31&res=products%2FhCZEHFO5sd%2Fdevices%2Ftempandshidu&et=1893817083&method=md5&sign=KRYjHSfhdmNb%2FAcfqaAA2A%3D%3D"
+#define MQTT_PUBID       "KUb3P9N4oJ"
+#define MQTT_DEVID       "wwwo"
+#define MQTT_TOKEN       "version=2018-10-31&res=products%2FKUb3P9N4oJ%2Fdevices%2Fwwwo&et=1893817083&method=md5&sign=OHoKOl0PYhsOOIFMCqUHzw%3D%3D"
 
 // MQTT主题
-#define MQTT_SUB_TOPIC   "$sys/hCZEHFO5sd/tempandshidu/thing/property/post/reply"
-#define MQTT_PUB_TOPIC   "$sys/hCZEHFO5sd/tempandshidu/thing/property/post"
+#define MQTT_SUB_TOPIC   "$sys/KUb3P9N4oJ/wwwo/thing/property/post/reply"
+#define MQTT_PUB_TOPIC   "$sys/KUb3P9N4oJ/wwwo/thing/property/post"
 #define MQTT_TEMP_PARAM  "temp_value"     // 温度参数名
 #define MQTT_HUMID_PARAM "humidity_value"    // 湿度参数名
 

@@ -83,6 +83,7 @@ int main(void)
 	RELAY_Init();
 	HUMID_Init();
 	FAN_Init();     // 添加风扇初始化
+	sysStatus.dehumidCycles = 0;  // 初始化除湿循环计数
 
 	while(1)
 	{	
@@ -203,9 +204,23 @@ if(currentMenu == MENU_MAIN) {
                     if(sysStatus.fanState) {
                         FAN_ON();
                         RELAY_ON();  // 风扇开启时同时开启加热
+                        sysStatus.dehumidCycles++;  // 增加循环计数
                     } else {
                         FAN_OFF();
                         RELAY_OFF(); // 风扇关闭时同时关闭加热
+                    }
+                    
+                    // 检查循环计数
+                    if(sysStatus.dehumidCycles >= 5) {
+                        if(last_valid_humidity < 50.0f) {
+                            sysStatus.workMode = MODE_STANDBY;  // 切换到待机模式
+                        } else {
+                            sysStatus.dehumidCycles = 0;  // 重置计数器，继续除湿
+                        }
+                        currentMenu = MENU_MAIN;  // 切换到主菜单
+                        needRefreshMenu = 1;  // 标记需要刷新菜单
+                        FAN_OFF();  // 确保风扇关闭
+                        RELAY_OFF();  // 确保加热关闭
                     }
                 }
             } else {
