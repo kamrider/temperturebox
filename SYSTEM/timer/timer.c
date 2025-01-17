@@ -4,6 +4,7 @@
 
 extern uint16_t Kms10;
 extern uint16_t Kms500;
+extern uint16_t Kms1000;
 extern PID_struct PID;
  
 void Timer4_init()	//T4 10ms时钟
@@ -39,5 +40,6 @@ TIM_ITConfig(TIM4,TIM_IT_Update,ENABLE); //向上计数溢出产生中断
     if(Kms10 >= 50) {
         Kms10 = 0;
         Kms500++;
+        Kms1000++;
     }
 }

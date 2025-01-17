@@ -43,6 +43,10 @@ static float last_valid_humidity = 0.0f;
 
 float unused_temp;  // 添加一个临时变量来接收DHT22的温度值
 
+uint16_t Kms1000 = 0;  // 新的计时器变量
+
+uint16_t last_read_time = 0;  // 定义 last_read_time 变量
+
 void Isr_Init()
 {
 	NVIC_InitTypeDef NVIC_InitStructure; 
@@ -104,18 +108,20 @@ if(currentMenu == MENU_MAIN) {
     OLED2_ShowString(2,7,"C");
 }
 delay_ms(100);
-		if(DHT22_Read_Data(&unused_temp, &humidity) == 0) {
-			last_valid_humidity = humidity;
-		} 
-		// 不管读取成功与否，都显示湿度值（使用最后一次有效值）
-        // 显示温度
-if(currentMenu == MENU_MAIN) {
-		OLED2_ShowString(3,1,"Humidity:");
-		OLED2_ShowNum(3,10,(int)last_valid_humidity,2);
-		OLED2_ShowString(3,12,".");
-		OLED2_ShowNum(3,13,(int)((last_valid_humidity-(int)last_valid_humidity)*10),1);
-		OLED2_ShowString(3,14,"%");
-	}	
+		if (Kms1000 - last_read_time >= 2) {  // 每2次（1秒）读取一次
+			last_read_time = Kms1000;
+			if (DHT22_Read_Data(&unused_temp, &humidity) == 0) {
+				last_valid_humidity = humidity;
+			}
+			// 显示湿度值
+			if(currentMenu == MENU_MAIN) {
+				OLED2_ShowString(3,1,"Humidity:");
+				OLED2_ShowNum(3,10,(int)last_valid_humidity,2);
+				OLED2_ShowString(3,12,".");
+				OLED2_ShowNum(3,13,(int)((last_valid_humidity-(int)last_valid_humidity)*10),1);
+				OLED2_ShowString(3,14,"%");
+			}
+		}
 //			        Menu_KeyHandle();
 //        Menu_Display();	
 		
