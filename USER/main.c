@@ -293,6 +293,7 @@ delay_ms(100);
                 FAN_OFF();
                 HUMID_OFF();
             }
+            Menu_Display();       // Ë¢ÐÂ²Ëµ¥ÏÔÊ¾
         }
 	}
 }
