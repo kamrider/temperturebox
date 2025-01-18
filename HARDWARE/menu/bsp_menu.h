@@ -17,6 +17,10 @@ typedef enum {
     MENU_MODE_SELECT,  // 模式选择
     MENU_TEMP_SET,     // 温度设置（仅制冷/加热模式）
     MENU_HUMID_SET,    // 加湿设置
+    MENU_SMART_TEMP_UPPER,
+    MENU_SMART_TEMP_LOWER,
+    MENU_SMART_HUMID_UPPER,
+    MENU_SMART_HUMID_LOWER
 } MenuState;
 
 // 工作模式枚举
@@ -25,6 +29,7 @@ typedef enum {
     MODE_COOLING,    // 制冷
     MODE_HEATING,    // 加热
     MODE_DEHUMID,    // 除湿
+    MODE_SMART       // 智能模式
 } WorkMode;
 
 // 系统状态结构体
@@ -34,6 +39,10 @@ typedef struct {
     float heatingTemp;    // 加热模式的目标温度
     uint8_t fanState;     // 风扇状态
     uint8_t dehumidCycles; // 除湿模式循环计数
+    float tempUpperLimit; // 温度上限
+    float tempLowerLimit; // 温度下限
+    float humidUpperLimit; // 湿度上限
+    float humidLowerLimit; // 湿度下限
 } SystemStatus;
 
 // 函数声明

@@ -25,13 +25,15 @@ void Menu_KeyHandle(void)
                 break;
                 
             case MENU_MODE_SELECT:
-                // 循环切换：待机->制冷->加热->除湿
+                // 循环切换：待机->制冷->加热->除湿->智能
                 if(sysStatus.workMode == MODE_STANDBY) {
                     sysStatus.workMode = MODE_COOLING;
                 } else if(sysStatus.workMode == MODE_COOLING) {
                     sysStatus.workMode = MODE_HEATING;
                 } else if(sysStatus.workMode == MODE_HEATING) {
                     sysStatus.workMode = MODE_DEHUMID;
+                } else if(sysStatus.workMode == MODE_DEHUMID) {
+                    sysStatus.workMode = MODE_SMART;  // 切换到智能模式
                 } else {
                     sysStatus.workMode = MODE_STANDBY;
                 }
@@ -52,6 +54,22 @@ void Menu_KeyHandle(void)
             case MENU_HUMID_SET:
                 sysStatus.humidOn = !sysStatus.humidOn;
                 break;
+                
+            case MENU_SMART_TEMP_UPPER:
+                sysStatus.tempUpperLimit += 1.0f;
+                break;
+                
+            case MENU_SMART_TEMP_LOWER:
+                sysStatus.tempLowerLimit += 1.0f;
+                break;
+                
+            case MENU_SMART_HUMID_UPPER:
+                sysStatus.humidUpperLimit += 1.0f;
+                break;
+                
+            case MENU_SMART_HUMID_LOWER:
+                sysStatus.humidLowerLimit += 1.0f;
+                break;
         }
         needRefreshMenu = 1;
     }
@@ -68,6 +86,8 @@ void Menu_KeyHandle(void)
             case MENU_MODE_SELECT:
                 // 反向循环切换
                 if(sysStatus.workMode == MODE_STANDBY) {
+                    sysStatus.workMode = MODE_SMART;  // 切换到智能模式
+                } else if(sysStatus.workMode == MODE_SMART) {
                     sysStatus.workMode = MODE_DEHUMID;
                 } else if(sysStatus.workMode == MODE_DEHUMID) {
                     sysStatus.workMode = MODE_HEATING;
@@ -93,6 +113,22 @@ void Menu_KeyHandle(void)
             case MENU_HUMID_SET:
                 sysStatus.humidOn = !sysStatus.humidOn;  // 与KEY1相同的功能
                 break;
+                
+            case MENU_SMART_TEMP_UPPER:
+                sysStatus.tempUpperLimit -= 1.0f;
+                break;
+                
+            case MENU_SMART_TEMP_LOWER:
+                sysStatus.tempLowerLimit -= 1.0f;
+                break;
+                
+            case MENU_SMART_HUMID_UPPER:
+                sysStatus.humidUpperLimit -= 1.0f;
+                break;
+                
+            case MENU_SMART_HUMID_LOWER:
+                sysStatus.humidLowerLimit -= 1.0f;
+                break;
         }
         needRefreshMenu = 1;
     }
@@ -114,6 +150,8 @@ void Menu_KeyHandle(void)
                     sysStatus.fanState = 0;        // 初始化风扇状态为关闭
                     FAN_OFF();                     // 确保风扇关闭
                     Kms500 = 0;                    // 重置计时器
+                } else if(sysStatus.workMode == MODE_SMART) {
+                    currentMenu = MENU_SMART_TEMP_UPPER;  // 智能模式进入温度上限设置
                 } else {
                     currentMenu = MENU_TEMP_SET;   // 制冷/加热模式到温度设置
                 }
@@ -125,6 +163,22 @@ void Menu_KeyHandle(void)
                 
             case MENU_HUMID_SET:
                 currentMenu = MENU_MAIN;           // 设置完成返回主菜单
+                break;
+                
+            case MENU_SMART_TEMP_UPPER:
+                currentMenu = MENU_SMART_TEMP_LOWER;  // 进入温度下限设置
+                break;
+                
+            case MENU_SMART_TEMP_LOWER:
+                currentMenu = MENU_SMART_HUMID_UPPER;  // 进入湿度上限设置
+                break;
+                
+            case MENU_SMART_HUMID_UPPER:
+                currentMenu = MENU_SMART_HUMID_LOWER;  // 进入湿度下限设置
+                break;
+                
+            case MENU_SMART_HUMID_LOWER:
+                currentMenu = MENU_MAIN;  // 设置完成返回主菜单
                 break;
         }
         needRefreshMenu = 1;
@@ -148,8 +202,10 @@ void Menu_Display(void)
                 OLED2_ShowString(1,6,"Cool");
             else if(sysStatus.workMode == MODE_HEATING)
                 OLED2_ShowString(1,6,"Heat");
-            else
-                OLED2_ShowString(1,6,"Dehum");    // 显示除湿模式
+            else if(sysStatus.workMode == MODE_DEHUMID)
+                OLED2_ShowString(1,6,"Dehum");
+            else if(sysStatus.workMode == MODE_SMART)
+                OLED2_ShowString(1,6,"Smart");  // 确保显示智能模式
             
 
             
@@ -179,8 +235,10 @@ void Menu_Display(void)
                 OLED2_ShowString(2,3,"Cool");
             else if(sysStatus.workMode == MODE_HEATING)
                 OLED2_ShowString(2,3,"Heat");
-            else
-                OLED2_ShowString(2,3,"Dehum");    // 添加除湿模式显示
+            else if(sysStatus.workMode == MODE_DEHUMID)
+                OLED2_ShowString(2,3,"Dehum");
+            else if(sysStatus.workMode == MODE_SMART)
+                OLED2_ShowString(2,3,"Smart");  // 添加智能模式显示
             OLED2_ShowString(4,1,"KEY1:Change KEY3:OK");
             break;
             
@@ -206,6 +264,30 @@ void Menu_Display(void)
             OLED2_ShowString(2,1,"->");
             OLED2_ShowString(2,3,sysStatus.humidOn ? "ON" : "OFF");
             OLED2_ShowString(4,1,"KEY1:Change KEY3:OK");
+            break;
+
+        case MENU_SMART_TEMP_UPPER:
+            OLED2_ShowString(1,1,"Set Temp Upper");
+            OLED2_ShowNum(2,1,(int)sysStatus.tempUpperLimit,2);
+            OLED2_ShowString(3,1,"K1:+ K2:- K3:OK");
+            break;
+
+        case MENU_SMART_TEMP_LOWER:
+            OLED2_ShowString(1,1,"Set Temp Lower");
+            OLED2_ShowNum(2,1,(int)sysStatus.tempLowerLimit,2);
+            OLED2_ShowString(3,1,"K1:+ K2:- K3:OK");
+            break;
+
+        case MENU_SMART_HUMID_UPPER:
+            OLED2_ShowString(1,1,"Set Humid Upper");
+            OLED2_ShowNum(2,1,(int)sysStatus.humidUpperLimit,2);
+            OLED2_ShowString(3,1,"K1:+ K2:- K3:OK");
+            break;
+
+        case MENU_SMART_HUMID_LOWER:
+            OLED2_ShowString(1,1,"Set Humid Lower");
+            OLED2_ShowNum(2,1,(int)sysStatus.humidLowerLimit,2);
+            OLED2_ShowString(3,1,"K1:+ K2:- K3:OK");
             break;
     }
     

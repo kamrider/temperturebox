@@ -88,6 +88,12 @@ int main(void)
 	HUMID_Init();
 	FAN_Init();     // 添加风扇初始化
 	sysStatus.dehumidCycles = 0;  // 初始化除湿循环计数
+	sysStatus.tempUpperLimit = 30.0f;  // 温度上限
+	sysStatus.tempLowerLimit = 15.0f;  // 温度下限
+	sysStatus.humidUpperLimit = 70.0f; // 湿度上限
+	sysStatus.humidLowerLimit = 50.0f; // 湿度下限
+	sysStatus.workMode = MODE_STANDBY;  // 设置为待机模式
+
 
 	while(1)
 	{	
@@ -183,7 +189,7 @@ delay_ms(100);
         }
         else if(sysStatus.workMode == MODE_HEATING) {
             // 只在主菜单界面且已完成温度设置时才进行控制
-            if(currentMenu == MENU_MAIN) {  
+            if (currentMenu == MENU_MAIN) {  
                 float tempDiff = sysStatus.heatingTemp - temperature;
                 
                 if(RELAY_GetState()) {  // 继电器开启状态
@@ -261,6 +267,33 @@ delay_ms(100);
             sysStatus.humidOn,
             humidity    // 添加湿度显示
         );
+
+        if (currentMenu == MENU_MAIN && sysStatus.workMode == MODE_SMART) {
+            // 在智能模式下执行特定操作
+            if (temperature > sysStatus.tempUpperLimit) {
+                // 调用降温操作
+                CCR1_Val = 200;  // 设置PWM输出为500，开启制冷
+            } else if (temperature < sysStatus.tempLowerLimit) {
+                // 调用加热操作
+                RELAY_ON();   // 假设有一个函数用于启动加热
+            } else {
+                // 如果温度在范围内，关闭加热和降温
+                CCR1_Val = 0;  // 设置PWM输出为0，关闭制冷
+                RELAY_OFF();
+            }
+
+            if (humidity > sysStatus.humidUpperLimit) {
+                // 调用除湿操作
+                FAN_ON();  // 使用风扇进行除湿
+            } else if (humidity < sysStatus.humidLowerLimit) {
+                // 调用加湿操作
+                HUMID_ON();  // 使用加湿器进行加湿
+            } else {
+                // 如果湿度在范围内，关闭加湿和除湿
+                FAN_OFF();
+                HUMID_OFF();
+            }
+        }
 	}
 }
 
