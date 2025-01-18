@@ -88,7 +88,7 @@ int main(void)
 	HUMID_Init();
 	FAN_Init();     // 添加风扇初始化
 	sysStatus.dehumidCycles = 0;  // 初始化除湿循环计数
-	sysStatus.tempUpperLimit = 30.0f;  // 温度上限
+	sysStatus.tempUpperLimit = 16.0f;  // 温度上限
 	sysStatus.tempLowerLimit = 15.0f;  // 温度下限
 	sysStatus.humidUpperLimit = 70.0f; // 湿度上限
 	sysStatus.humidLowerLimit = 50.0f; // 湿度下限
@@ -252,33 +252,18 @@ delay_ms(100);
         } else {
             HUMID_OFF();
         }
-
-        GENERAL_TIM_Init();
-        
-        // 调试输出
-        printf("%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d,%d,%.1f\n", 
-            PID.setTemp,
-            temperature,
-            PID.t1,
-            PID.t2,
-            PID.t3,
-            CCR1_Val,
-            sysStatus.workMode,
-            sysStatus.humidOn,
-            humidity    // 添加湿度显示
-        );
-
         if (currentMenu == MENU_MAIN && sysStatus.workMode == MODE_SMART) {
-            // 在智能模式下执行特定操作
-            if (temperature > sysStatus.tempUpperLimit) {
+            if (temperature > sysStatus.tempUpperLimit + 1.5f) {
                 // 调用降温操作
-                CCR1_Val = 200;  // 设置PWM输出为500，开启制冷
-            } else if (temperature < sysStatus.tempLowerLimit) {
+                printf("Cooling activated: Temperature = %.2f, Upper Limit = %.2f, CCR1_Val = %d\n", temperature, sysStatus.tempUpperLimit, CCR1_Val);
+                CCR1_Val = 200;  // 设置PWM输出为200，开启制冷
+                 printf("Cooling activated: Temperature = %.2f, Upper Limit = %.2f, CCR1_Val = %d\n", temperature, sysStatus.tempUpperLimit, CCR1_Val);
+            } else if (temperature < sysStatus.tempLowerLimit - 1.5f) {
                 // 调用加热操作
-                RELAY_ON();   // 假设有一个函数用于启动加热
+                RELAY_ON();   // 启动加热
             } else {
                 // 如果温度在范围内，关闭加热和降温
-                CCR1_Val = 0;  // 设置PWM输出为0，关闭制冷
+                CCR1_Val = 0;  // 关闭制冷
                 RELAY_OFF();
             }
 
@@ -295,6 +280,23 @@ delay_ms(100);
             }
             Menu_Display();       // 刷新菜单显示
         }
+        
+        GENERAL_TIM_Init();
+        
+        // 调试输出
+        printf("%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d,%d,%.1f\n", 
+            PID.setTemp,
+            temperature,
+            PID.t1,
+            PID.t2,
+            PID.t3,
+            CCR1_Val,
+            sysStatus.workMode,
+            sysStatus.humidOn,
+            humidity    // 添加湿度显示
+        );
+
+
 	}
 }
 
