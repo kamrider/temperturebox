@@ -2,7 +2,7 @@
 ..\obj\core_delay.o: ..\SYSTEM\dwt_delay\core_delay.h
 ..\obj\core_delay.o: ..\USER\stm32f10x.h
 ..\obj\core_delay.o: ..\CORE\core_cm3.h
-..\obj\core_delay.o: F:\Keil\ARM\ARMCC\Bin\..\include\stdint.h
+..\obj\core_delay.o: F:\keil\ARM\ARMCC\Bin\..\include\stdint.h
 ..\obj\core_delay.o: ..\USER\system_stm32f10x.h
 ..\obj\core_delay.o: ..\USER\stm32f10x_conf.h
 ..\obj\core_delay.o: ..\STM32F10x_FWLib\inc\stm32f10x_adc.h

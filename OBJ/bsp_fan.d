@@ -2,7 +2,7 @@
 ..\obj\bsp_fan.o: ..\HARDWARE\FAN\bsp_fan.h
 ..\obj\bsp_fan.o: ..\USER\stm32f10x.h
 ..\obj\bsp_fan.o: ..\CORE\core_cm3.h
-..\obj\bsp_fan.o: F:\Keil\ARM\ARMCC\Bin\..\include\stdint.h
+..\obj\bsp_fan.o: F:\keil\ARM\ARMCC\Bin\..\include\stdint.h
 ..\obj\bsp_fan.o: ..\USER\system_stm32f10x.h
 ..\obj\bsp_fan.o: ..\USER\stm32f10x_conf.h
 ..\obj\bsp_fan.o: ..\STM32F10x_FWLib\inc\stm32f10x_adc.h

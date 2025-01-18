@@ -2,7 +2,7 @@
 ..\obj\bsp_dht22.o: ..\HARDWARE\DHT22\bsp_dht22.h
 ..\obj\bsp_dht22.o: ..\USER\stm32f10x.h
 ..\obj\bsp_dht22.o: ..\CORE\core_cm3.h
-..\obj\bsp_dht22.o: F:\Keil\ARM\ARMCC\Bin\..\include\stdint.h
+..\obj\bsp_dht22.o: F:\keil\ARM\ARMCC\Bin\..\include\stdint.h
 ..\obj\bsp_dht22.o: ..\USER\system_stm32f10x.h
 ..\obj\bsp_dht22.o: ..\USER\stm32f10x_conf.h
 ..\obj\bsp_dht22.o: ..\STM32F10x_FWLib\inc\stm32f10x_adc.h
